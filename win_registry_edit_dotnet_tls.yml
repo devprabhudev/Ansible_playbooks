@@ -1,0 +1,46 @@
+---
+- name: Set Registry Entries
+  hosts: win
+  gather_facts: no
+  tasks:
+    - name: Registry edit.NETFramework\v2.0.50727
+      ansible.windows.win_regedit:
+        path: HKLM:\SOFTWARE\Microsoft\.NETFramework\v2.0.50727
+        value:
+          - name: SystemDefaultTlsVersions
+            data: 1
+            type: dword
+          - name: SchUseStrongCrypto
+            data: 1
+            type: dword
+    - name: Registry edit.NETFramework\v4.0.30319
+      ansible.windows.win_regedit:
+        path: HKLM:\SOFTWARE\Microsoft\.NETFramework\v4.0.30319
+        value:
+          - name: SystemDefaultTlsVersions
+            data: 1
+            type: dword
+          - name: SchUseStrongCrypto
+            data: 1
+            type: dword
+    - name: Registry edit Wow6432Node.NETFramework\v2.0.50727
+      ansible.windows.win_regedit:
+        path: HKLM:\SOFTWARE\Wow6432Node\Microsoft\.NETFramework\v2.0.50727
+        value:
+          - name: SystemDefaultTlsVersions
+            data: 1
+            type: dword
+          - name: SchUseStrongCrypto
+            data: 1
+            type: dword
+    - name: Registry edit Wow6432Node.NETFramework\v4.0.30319
+      ansible.windows.win_regedit:
+        path: HKLM:\SOFTWARE\WOW6432Node\Microsoft\.NETFramework\v4.0.30319
+        value:
+          - name: SystemDefaultTlsVersions
+            data: 1
+            type: dword
+          - name: SchUseStrongCrypto
+            data: 1
+            type: dword
+
