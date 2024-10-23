@@ -1,0 +1,52 @@
+---
+- name: php installer linux
+  hosts: localhost
+  #gather_facts: yes
+  # become: yes
+  vars_prompt:
+    - name: version
+      prompt: Enter the php version
+      private: no
+  tasks:
+  - name: rhn check
+    shell: sudo rhn_check
+    register: rhn_check
+    changed_when: false
+
+  - block:
+
+      - name: check for php module
+        shell: sudo yum module list php
+        register: php_module_list
+        ignore_errors: yes
+        changed_when: false
+
+      - name: Find the enabled php stream
+        shell: sudo yum module list php | awk '$3 ~ /\[e\]/ {print $2}' | grep -E '^[0-9]+\.[0-9]+' | sort -u
+        register: php_enabled_stream
+        when: php_module_list.rc == 0 and php_module_list.stdout != ""
+        changed_when: false
+
+      - name: Find the default php stream
+        shell: sudo yum module list php | awk '$3 ~ /\[d\]/ {print $2}' | grep -E '^[0-9]+\.[0-9]+' | sort -u
+        register: php_default_stream
+        when: php_module_list.rc == 0 and php_module_list.stdout != ""
+      - name: Printing default and enabled php stream details
+        debug:
+          msg: "The default php stream is {{ php_default_stream.stdout }} and enabled php stream is {{ php_enabled_stream.stdout }}"
+        when: php_enabled_stream.stdout != ""
+        changed_when: false
+
+      - name: Printing php default stream
+        debug:
+          msg: "The default and enabled php stream is {{ php_default_stream.stdout }}"
+        when: php_enabled_stream.stdout == ""
+        changed_when: false
+
+      - name: Enable php stream
+        shell: |
+          sudo yum module reset php -y
+          sudo yum module enable php:{{ version }} -y
+        when: php_enabled_stream != version
+ 
+    when: rhn_check.rc == 0
