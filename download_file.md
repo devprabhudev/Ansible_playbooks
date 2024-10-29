@@ -1,13 +1,10 @@
 ## This playbook downloads a file
- Replace the URL with the required url
- Make a vars file and keep the credentials secured there by using ansible vault
- Replace the destination path as per your requirement
-
 ```
 ---
 # Replace the URL with the required url
 #Make a vars file and keep the credentials secured there by using ansible vault
 #Replace the destination path as per your requirement
+
 - name: Download a file to a server
   hosts: all
   become: yes
