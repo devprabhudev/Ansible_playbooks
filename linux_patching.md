@@ -6,12 +6,14 @@
   tasks:
   - name: check application status
 ## ADD the lines of applications you want to check
+    shell: systemctl is-active httpd
+    register: application_process_check
     
 
 
   - name: "Applying patches to the server"
     yum: name=kernel state=latest
-    when: application_process_check.stdout == "Process is not running.\r\n" and ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
+    when: application_process_check.stdout == "Active.\r\n" && ansible_distribution == "RedHat"
     register: patch_update
   - name: "Check if reboot required"
     shell: KERNEL_NEW=$(rpm -q --last kernel |head -1 | awk '{print $1}'|sed 's/kernel-//'); KERNEL_NOW=$(uname -r); if [[ $KERNEL_NEW != $KERNEL_NOW ]]; then echo "reboot needed"; else echo "reboot not needed"; fi
