@@ -1,3 +1,9 @@
+# This playbook downloads a file
+> Replace the URL with the required url
+> make a vars file and keep the credentials secured there by using ansible vaults
+> replace the destination path as per your requirement
+
+```
 ---
 - name: Download a file to a server
   hosts: all
@@ -14,4 +20,4 @@
         force: yes
         become_user: "{{ ansible_username }}"
         become_password: "{{ ansible_password }}"
-
+```
