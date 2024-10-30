@@ -1,5 +1,4 @@
 # Description: This playbook is for demonstrating the way ansible handlers work
-# Author: Novatec IT Services
 ```
 - hosts:
   remote_user: root
