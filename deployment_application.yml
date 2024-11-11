@@ -1,0 +1,64 @@
+---
+- name: Installer using Make and subversion repo
+  hosts: enter the hosts
+  become: yes
+  become_user: enter the username
+  gather_facts: false
+  vars_files:
+    - variablefile.yml
+
+  vars_prompt:
+    - name: version
+      prompt: Enter the Version M.m to be packaged
+      private: no
+    - name: release
+      prompt: Enter the Release r
+      private: no
+    - name: package_directory
+      prompt: Enter the directory for the package to be checked out
+      private: no
+  tasks:
+    - name: Search for rpm in prod and qa repo
+      shell: |
+        if [[ -f {{ subversion.qa }}/{{ application_name }}-{{ version }}-{{ release }}.{{ app_extension }}; then
+        echo "qa"
+        elif [[ -f {{ subversion.prod }}/{{ application_name}}-{{ version }}-{{ release }}.{{ app_extension }} ]]; then
+        echo "prod"
+        else
+        echo "not_found"
+        fi
+      register: result
+    - name: Store the search result
+      set_fact:
+        search_result: "{{ result.stdout }}"
+    - name: print details
+      debug:
+        var: search_result
+    - name: Task completed if the package is already in qa repo
+      when: search_result == "qa"
+      debug:
+        msg: "Task completed package exists in qa repo"
+    - name: Copy to qa repo from prod repo
+      when: search_result == "prod"
+      shell: sudo cp  {{ subversion.prod }}/{{ application_name }}-{{ version }}-{{ release }}.{{ app_extension }} {{ subversion.qa }}
+    - block:
+        - name: Print the tag details
+          debug:
+            msg: "Tag to be packaged is {{ version }}-{{ release }} to the following directory {{ package_directory }}"
+        - name: Export svn and create installer 
+          shell: |
+            sudo svn export {{ svn_tag_url }}{{ version }}-{{ release }} {{ package_directory }} --force
+            pushd {{ package_directory }}
+            sudo make package VERSION={{ version }} RELEASE={{ release }} PACKAGE_TARGET=/root/rpmbuild/RPMS/noarch SOURCE_TARGET=/root/rpmbuild/SOURCES/
+        - name: Copy the generated installer to repo
+          shell: |
+            sudo cp {{ package_directory }}/{{ application }}-{{ version }}-{{ release }}.{{ extesnion }} {{ subversion.qa }}
+        - name: Clean up code check out and delete the svn export
+          shell: |
+            sudo make clean VERSION={{ version}} RELEASE={{release}}
+            popd
+            sudo rm -r {{ package_directory }}
+        - name: Print the installer location
+          debug:
+            msg: "Generated Installer {{ application.name}} -{{ version }}-{{ release }}.{{{ extension }} is copied to {{ qa }} "
+      when: search_result == "not_found"
