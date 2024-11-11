@@ -61,3 +61,4 @@
         publisher: Canonical
         sku: 22_04-lts
         version: latest
+        #https://learn.microsoft.com/en-us/azure/cloud-shell/get-started/classic?tabs=azurecli
